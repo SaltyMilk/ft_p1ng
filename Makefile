@@ -6,24 +6,22 @@ MOBJ = $(MSRC:.c=.o)
 
 NAME = ft_ping
 
-all: libft.a $(NAME)
+all: $(NAME)
 
-$(NAME): $(MOBJ)
-	gcc $(CFLAGS) $? libft.a -o $(NAME) 
+$(NAME): $(MOBJ) libft/libft.a
+	gcc $(CFLAGS) $? libft/libft.a -o $(NAME) 
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $?
 
-libft.a:
+libft/libft.a:
 	make -C libft
-	cp ./libft/libft.a libft.a
 
 clean: 
 	rm -f $(MOBJ)
 	make -C libft clean
 fclean:
-	rm -f $(MOBJ) $(NAME) libft_malloc.so testx
-#libft.a
+	rm -f $(MOBJ) $(NAME) 
 	make -C libft fclean
 
 
