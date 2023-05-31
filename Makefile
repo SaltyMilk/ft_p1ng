@@ -1,4 +1,4 @@
-MSRC = ft_ping.c
+MSRC = ft_ping.c err.c
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 MOBJ = $(MSRC:.c=.o)
@@ -9,7 +9,7 @@ NAME = ft_ping
 all: libft.a $(NAME)
 
 $(NAME): $(MOBJ)
-	gcc $(CFLAGS) libft.a $? -o $(NAME) 
+	gcc $(CFLAGS) $? libft.a -o $(NAME) 
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $?

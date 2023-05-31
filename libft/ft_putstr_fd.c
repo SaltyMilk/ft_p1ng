@@ -20,5 +20,6 @@ void	ft_putstr_fd(char *s, int fd, int *char_print)
 		return ;
 	len = ft_strlen(s);
 	write(fd, s, len);
-	*char_print += len;
+	if (char_print)
+		*char_print += len;
 }

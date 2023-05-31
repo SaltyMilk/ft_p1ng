@@ -12,4 +12,15 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef struct s_flags
+{
+    char    vflag;
+}               t_flags;
+
+
+
+//err.c
+void print_help();
+void print_errop(char c);
+
 #endif
