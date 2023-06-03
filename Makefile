@@ -1,4 +1,4 @@
-MSRC = ft_ping.c err.c
+MSRC =  err.c parser.c signal.c ft_ping.c
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 MOBJ = $(MSRC:.c=.o)

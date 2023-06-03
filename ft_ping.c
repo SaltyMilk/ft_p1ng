@@ -1,102 +1,33 @@
 #include "ft_ping.h"
 
-
-void ft_ping(char *dest)
+int setsocket()
 {
-    puts(dest);
+    int ttl = 117; //update with -t flag
+    struct timeval tv_to; 
+    tv_to.tv_sec = 5;// timeout update with -W flag
+    tv_to.tv_usec = 0;
+    int sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (sock < 0)
+        exit(1);
+    //set TTL
+    if (setsockopt(sock, SOL_IP, IP_TTL, &ttl, sizeof(ttl)))
+        exit(1);
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,&tv_to, sizeof(tv_to)))
+        exit(1);
+    return (sock);
 }
 
-int check_flags(char **argv, t_flags *flags)
+void ft_ping(struct sockaddr_in addr)
 {
-    size_t i = 0;
-    char one_valid = 0;
-
-    while (argv[i])
-    {
-        if (argv[i][0] == '-')
-        {
-            for (size_t j = 1; argv[i][j]; j++)
-            {
-                if (argv[i][j] == 'v')
-                    flags->vflag = 1;
-                else if (argv[i][j] == 'h')
-                {
-                
-                    print_help();
-                    return (1);
-                }
-                else 
-                {
-                    print_errop(argv[i][j]);
-                    print_help();
-                    return (1);
-                }
-            }
-        }
-        else
-            one_valid = 1;
-        argv++;
-    }
-    if (!one_valid)
-    {
-        ft_putstr_fd("ping: usage error: Destination address required\n", 2, 0);
-        return (1);
-    }
-    return (0);
+    (void) addr;
+    setsocket();
+    setsignal();
+    while (1)
+        ;
 }
 
-void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
-{
-    struct addrinfo hints;
-    struct addrinfo *res;
 
-    ft_bzero(&hints, sizeof(hints));
-    hints.ai_family = AF_INET; //IpV4
 
-    size_t i = 0;
-    while (i < argc)
-    {
-        if (argv[i][0] == '-') //it's an option
-        {
-            i++;
-            continue;
-        }
-        if (getaddrinfo(argv[i], 0, &hints, &res))
-        {
-            ft_putstr_fd("ping: ", 2, 0);
-            ft_putstr_fd(argv[i], 2, 0);
-            ft_putstr_fd(": Name or service not known\n", 2, 0);
-            exit(2);
-        }
-        freeaddrinfo(res);
-        i++;
-    }
-    i = argc - 1;
-    while (i != 0)
-    {
-        if (argv[i][0] == '-') //it's an option
-        {
-            i--;
-            continue;
-        }
-        if (!getaddrinfo(argv[i], 0, &hints, &res))
-        {
-            addr->sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
-            freeaddrinfo(res);
-            return;
-        }
-        freeaddrinfo(res);
-
-        i--;
-    }
-    if (!getaddrinfo(argv[i], 0, &hints, &res))
-    {
-        addr->sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
-        freeaddrinfo(res);
-        return;
-    }
-    freeaddrinfo(res);
-}
 
 int main(int argc, char **argv)
 {
@@ -117,6 +48,6 @@ int main(int argc, char **argv)
         parse_hosts(argc - 1 , argv + 1, &addr);
         if (!addr.sin_addr.s_addr) //should never happen but let's be safe
             return 1;
-//        ft_ping(argv[argc - 1]); //Use last arg
+        ft_ping(addr); //Use last arg
     }
 }

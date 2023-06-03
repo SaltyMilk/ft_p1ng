@@ -18,9 +18,15 @@ typedef struct s_flags
 }               t_flags;
 
 
-
+//parser.c
+int check_flags(char **argv, t_flags *flags);
+void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr);
 //err.c
+void print_errhost(char *host);
 void print_help();
 void print_errop(char c);
+//signal.c
+void intHandle(int i);
+void setsignal();
 
 #endif
