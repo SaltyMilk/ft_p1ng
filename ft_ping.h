@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <stdio.h>
+#include <netinet/ip_icmp.h>
 
 typedef struct s_flags
 {
@@ -30,9 +31,7 @@ void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr);
 void print_errhost(char *host);
 void print_help();
 void print_errop(char c);
-//signal.c
-void intHandle(int i);
-void setsignal();
+
 //icmp.c
 unsigned short checksum(void *b, int len);
 
