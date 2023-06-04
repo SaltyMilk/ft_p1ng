@@ -4,6 +4,7 @@ int setsocket()
 {
     int ttl = 117; //update with -t flag
     struct timeval tv_to; 
+
     tv_to.tv_sec = 5;// timeout update with -W flag
     tv_to.tv_usec = 0;
     int sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -12,18 +13,33 @@ int setsocket()
     //set TTL
     if (setsockopt(sock, SOL_IP, IP_TTL, &ttl, sizeof(ttl)))
         exit(1);
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,&tv_to, sizeof(tv_to)))
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv_to, sizeof(tv_to)))
         exit(1);
+
     return (sock);
 }
 
 void ft_ping(struct sockaddr_in addr)
 {
     (void) addr;
-    setsocket();
+    t_ping_pckt pckt;
+    size_t i = 0;
+    size_t msg_n = 0;
+    int socket = setsocket();
+
     setsignal();
-    while (1)
-        ;
+    if (!(pckt.content = malloc(64 - sizeof(pckt.hdr)))) //change 64 by -s in the future
+        exit(1);
+    while (42069)
+    {
+        pckt.hdr.type = ICMP_ECHO;
+        pckt.hdr.un.echo.id = getpid();
+        while (i < sizeof(pckt.content))
+            pckt.content[i] = '0' + i;
+        pckt.content[i] = 0;
+        pckt.hdr.un.echo.sequence = msg_n++;
+        pckt.hdr.checksum = checksum(&pckt, sizeof(pckt));
+    }
 }
 
 
