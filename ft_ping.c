@@ -6,6 +6,7 @@ void intHandle(int i)
 {
     (void) i;
     stop_send = 42069;
+    printf("\n");
 }
 
 void setsignal()
@@ -58,26 +59,35 @@ void ft_ping(struct sockaddr_in addr)
     int pckt_size = 64;//change 64 by -s in the future
 
     setsignal();
-    if (!(pckt.content = malloc(pckt_size - sizeof(pckt.hdr)))) 
-        exit(1);
     gettimeofday(&tv_start, 0);
-    puts("getting in !");
     while (stop_send != 42069)
     {
-        printf("stopsend=%d\n", stop_send);
+        usleep(1000000);
+        ft_bzero(&pckt, sizeof(pckt));
+        if (!(pckt.content = malloc(pckt_size - sizeof(pckt.hdr)))) 
+            exit(1);
         pckt.hdr.type = ICMP_ECHO;
         pckt.hdr.un.echo.id = getpid();
+        i = 0;
         while (i < sizeof(pckt.content))
+        {
             pckt.content[i] = '0' + i;
+            i++;
+        }
         pckt.content[i] = 0;
         pckt.hdr.un.echo.sequence = pckt_n++;
         pckt.hdr.checksum = checksum(&pckt, sizeof(pckt));
 
         gettimeofday(&tv_sent, 0);
         if (sendto(socket, &pckt, sizeof(pckt), 0, (struct sockaddr*)&addr, sizeof(addr)) <= 0)
+        {
             err_n++;
+            free(pckt.content);
+        }
         else //we were able to send !
         {
+            free(pckt.content);
+
             socklen_t len = sizeof(r_addr);
             if (recvfrom(socket, &pckt, sizeof(pckt), 0, (struct sockaddr*)&r_addr, &len) <= 0)
                 err_n++;
@@ -89,17 +99,17 @@ void ft_ping(struct sockaddr_in addr)
                     rtt_max = rtt;
                 if (rtt < rtt_min)
                     rtt_min = rtt;
-                printf("%d bytes from {} (h:{}) icmp_seq=%ld ttl=%d time=%f ms\n",pckt_size, pckt_n, ttl, rtt);
+                printf("%d bytes from {} (h:{}) icmp_seq=%ld ttl=%d time=%.3f ms\n",pckt_size, pckt_n, ttl, rtt);
             }
         }
 
     }
     gettimeofday(&tv_end, 0);
-    rtt_tot = ((float)(tv_end.tv_usec - tv_start.tv_usec)) / 1000;
+    rtt_tot = ((double)(tv_end.tv_sec - tv_start.tv_sec)) *1000 + ((double)(tv_end.tv_usec - tv_start.tv_usec)) / 1000;
     rtt_avg = rtt_tot / (pckt_n - err_n);
     printf("--- {} ping statistics ---\n");//placeholder change by arg host
     printf("%ld packets transmitted, %ld received, %ld%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
-    printf("rtt min/avg/max/mdev = %f/%f/%f/%f ms\n", rtt_min, rtt_avg, rtt_avg, rtt_mdev);
+    printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", rtt_min, rtt_avg, rtt_max, rtt_mdev);
 }
 
 
