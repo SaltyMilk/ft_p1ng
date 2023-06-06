@@ -54,13 +54,15 @@ void ft_ping(struct sockaddr_in addr)
     double rtt;
     double rtt_min = 2147483647;
     double rtt_sum = 0;
+    double rtt_sqsum = 0;
     double rtt_max = 0;
     double rtt_avg = 0;
     double rtt_mdev = 0;
-    int pckt_size = 64;//change 64 by -s in the future
+    int pckt_size = 56;//change 56 by -s in the future
 
     setsignal();
     gettimeofday(&tv_start, 0);
+    printf("PING {} ({}) %d(%ld) bytes of data\n", pckt_size, pckt_size + sizeof(pckt.hdr));
     while (stop_send != 42069)
     {
         usleep(1000000);
@@ -85,7 +87,7 @@ void ft_ping(struct sockaddr_in addr)
             err_n++;
             free(pckt.content);
         }
-        else //we were able to send !
+        else
         {
             free(pckt.content);
 
@@ -97,6 +99,7 @@ void ft_ping(struct sockaddr_in addr)
                 gettimeofday(&tv_rcv, 0);
                 rtt = ((double)(tv_rcv.tv_sec - tv_sent.tv_sec)) *1000 + ((double)(tv_rcv.tv_usec - tv_sent.tv_usec))/1000;
                 rtt_sum += rtt;
+                rtt_sqsum += rtt * rtt;
                 if (rtt > rtt_max)
                     rtt_max = rtt;
                 if (rtt < rtt_min)
@@ -107,10 +110,13 @@ void ft_ping(struct sockaddr_in addr)
 
     }
     gettimeofday(&tv_end, 0);
+    double pckt_rcv = pckt_n - err_n;
     rtt_tot = ((double)(tv_end.tv_sec - tv_start.tv_sec)) *1000 + ((double)(tv_end.tv_usec - tv_start.tv_usec)) / 1000;
     rtt_avg = rtt_sum / (pckt_n - err_n);
+    rtt_mdev = dSqrt((rtt_sqsum / pckt_rcv) - ((rtt_sum/pckt_rcv) *(rtt_sum/pckt_rcv)) );
+    int precision = calcPrecision(((pckt_n - (pckt_n - err_n))/pckt_n) * 100);
     printf("--- {} ping statistics ---\n");//placeholder change by arg host
-    printf("%.0f packets transmitted, %.0f received, %.4f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
+    printf("%.0f packets transmitted, %.0f received, %.*f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, precision, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
     printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", rtt_min, rtt_avg, rtt_max, rtt_mdev);
 }
 

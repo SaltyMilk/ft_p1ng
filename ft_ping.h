@@ -34,5 +34,7 @@ void print_errop(char c);
 
 //icmp.c
 unsigned short checksum(void *b, int len);
-
+//math.c
+double dSqrt(double x);
+int calcPrecision(double n);
 #endif
