@@ -62,7 +62,7 @@ void ft_ping(struct sockaddr_in addr)
 
     setsignal();
     gettimeofday(&tv_start, 0);
-    printf("PING {} ({}) %d(%ld) bytes of data\n", pckt_size, pckt_size + sizeof(pckt.hdr));
+    printf("PING {} ({}) %d(%ld) bytes of data\n", pckt_size, pckt_size + sizeof(pckt.hdr) + sizeof(struct ip));
     while (stop_send != 42069)
     {
         usleep(1000000);

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/ip.h>
 
 typedef struct s_flags
 {
