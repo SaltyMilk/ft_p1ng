@@ -26,20 +26,21 @@ typedef struct s_ping_pckt
 }               t_ping_pckt;
 
 //parser.c
-int check_flags(char **argv, t_flags *flags);
-char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr);
+int             check_flags(char **argv, t_flags *flags);
+char            *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr);
+int             is_ip(char *s);
 //err.c
-void print_errhost(char *host);
-void print_help();
-void print_errop(char c);
+void            print_errhost(char *host);
+void            print_help();
+void            print_errop(char c);
 
 //icmp.c
-unsigned short checksum(void *b, int len);
-char *dns(char *host, struct sockaddr_in *addr);
-char* reverse_dns_lookup(char *ip);
-int setsocket(int ttl, int to);
+unsigned short  checksum(void *b, int len);
+char            *dns(char *host, struct sockaddr_in *addr);
+char            *reverse_dns_lookup(char *ip);
+int             setsocket(int ttl, int to);
 
 //math.c
-double dSqrt(double x);
-int calcPrecision(double n);
+double          dSqrt(double x);
+int             calcPrecision(double n);
 #endif

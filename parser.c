@@ -51,6 +51,19 @@ char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
     return NULL;
 }
 
+int is_ip(char *s)
+{
+    size_t i = 0;
+
+    while (s[i])
+    {
+        if (s[i] != '.' && !ft_isdigit(s[i]))
+            return 0;
+        i++;
+    }
+    return 1;
+}
+
 int check_flags(char **argv, t_flags *flags)
 {
     size_t i = 0;
