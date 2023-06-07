@@ -1,6 +1,6 @@
 #include "ft_ping.h"
 
-void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
+char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
 {
     struct addrinfo hints;
     struct addrinfo *res;
@@ -35,7 +35,7 @@ void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
         {
             addr->sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
             freeaddrinfo(res);
-            return;
+            return argv[i];
         }
         freeaddrinfo(res);
 
@@ -45,9 +45,10 @@ void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
     {
         addr->sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
         freeaddrinfo(res);
-        return;
+        return argv[i];
     }
     freeaddrinfo(res);
+    return NULL;
 }
 
 int check_flags(char **argv, t_flags *flags)

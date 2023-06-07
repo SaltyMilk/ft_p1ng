@@ -27,7 +27,7 @@ typedef struct s_ping_pckt
 
 //parser.c
 int check_flags(char **argv, t_flags *flags);
-void parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr);
+char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr);
 //err.c
 void print_errhost(char *host);
 void print_help();

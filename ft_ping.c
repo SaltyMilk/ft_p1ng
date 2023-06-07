@@ -35,7 +35,29 @@ int setsocket(int ttl, int to)
     return (sock);
 }
 
-void ft_ping(struct sockaddr_in addr)
+//find ip
+char *dns(char *host, struct sockaddr_in *addr)
+{
+    struct hostent *host_entity;
+    char *ip;
+ 
+    if ((host_entity = gethostbyname(host)) == NULL)
+
+        return NULL;
+     
+    if (!(ip = ft_calloc(64, 1)))
+        return NULL;
+    inet_ntop(AF_INET, &addr->sin_addr, ip, 64);
+    ip[63] = 0;
+ 
+    addr->sin_family = host_entity->h_addrtype;
+    addr->sin_port = htons(0);
+    addr->sin_addr.s_addr  = *(long*)host_entity->h_addr;
+    return ip;
+}
+
+
+void ft_ping(struct sockaddr_in addr, char *host,char *ip)
 {
     (void) addr;
     t_ping_pckt pckt;
@@ -62,7 +84,7 @@ void ft_ping(struct sockaddr_in addr)
 
     setsignal();
     gettimeofday(&tv_start, 0);
-    printf("PING {} ({}) %d(%ld) bytes of data\n", pckt_size, pckt_size + sizeof(pckt.hdr) + sizeof(struct ip));
+    printf("PING %s (%s) %d(%ld) bytes of data\n", host, ip, pckt_size, pckt_size + sizeof(pckt.hdr) + sizeof(struct ip));
     while (stop_send != 42069)
     {
         usleep(1000000);
@@ -110,6 +132,7 @@ void ft_ping(struct sockaddr_in addr)
 
     }
     gettimeofday(&tv_end, 0);
+    free(ip);
     double pckt_rcv = pckt_n - err_n;
     rtt_tot = ((double)(tv_end.tv_sec - tv_start.tv_sec)) *1000 + ((double)(tv_end.tv_usec - tv_start.tv_usec)) / 1000;
     rtt_avg = rtt_sum / (pckt_n - err_n);
@@ -128,6 +151,8 @@ int main(int argc, char **argv)
     int cf_ret;
     t_flags flags;
     struct sockaddr_in addr;
+    char *host;
+    char *ip;
 
     ft_bzero(&addr, sizeof(addr));
     if (argc == 1)
@@ -139,9 +164,11 @@ int main(int argc, char **argv)
     {
         if ((cf_ret = check_flags(argv + 1, &flags)))
             return (cf_ret);
-        parse_hosts(argc - 1 , argv + 1, &addr);
+        host = parse_hosts(argc - 1 , argv + 1, &addr);
         if (!addr.sin_addr.s_addr) //should never happen but let's be safe
             return 1;
-        ft_ping(addr); //Use last arg
+        if (!(ip = dns(host, &addr)))
+            return 1;
+        ft_ping(addr, host, ip); //Use last arg
     }
 }
