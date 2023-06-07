@@ -35,6 +35,10 @@ void print_errop(char c);
 
 //icmp.c
 unsigned short checksum(void *b, int len);
+char *dns(char *host, struct sockaddr_in *addr);
+char* reverse_dns_lookup(char *ip);
+int setsocket(int ttl, int to);
+
 //math.c
 double dSqrt(double x);
 int calcPrecision(double n);

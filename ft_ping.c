@@ -6,7 +6,8 @@ void intHandle(int i)
 {
     (void) i;
     stop_send = 42069;
-    printf("\n");
+    printf("\b\b  \b\b");
+
 }
 
 void setsignal()
@@ -17,47 +18,7 @@ void setsignal()
 }
 
 
-int setsocket(int ttl, int to)
-{
-    struct timeval tv_to; 
-
-    tv_to.tv_sec = to;
-    tv_to.tv_usec = 0;
-    int sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (sock < 0)
-        exit(1);
-    //set TTL
-    if (setsockopt(sock, SOL_IP, IP_TTL, &ttl, sizeof(ttl)))
-        exit(1);
-    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv_to, sizeof(tv_to)))
-        exit(1);
-
-    return (sock);
-}
-
-//find ip
-char *dns(char *host, struct sockaddr_in *addr)
-{
-    struct hostent *host_entity;
-    char *ip;
- 
-    if ((host_entity = gethostbyname(host)) == NULL)
-
-        return NULL;
-     
-    if (!(ip = ft_calloc(64, 1)))
-        return NULL;
-    inet_ntop(AF_INET, &addr->sin_addr, ip, 64);
-    ip[63] = 0;
- 
-    addr->sin_family = host_entity->h_addrtype;
-    addr->sin_port = htons(0);
-    addr->sin_addr.s_addr  = *(long*)host_entity->h_addr;
-    return ip;
-}
-
-
-void ft_ping(struct sockaddr_in addr, char *host,char *ip)
+void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain)
 {
     (void) addr;
     t_ping_pckt pckt;
@@ -126,19 +87,20 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip)
                     rtt_max = rtt;
                 if (rtt < rtt_min)
                     rtt_min = rtt;
-                printf("%d bytes from {} (h:{}) icmp_seq=%.0f ttl=%d time=%.3f ms\n",pckt_size, pckt_n, ttl, rtt);
+                printf("%ld bytes from %s (%s) icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), domain,ip ,pckt_n, ttl, rtt);
             }
         }
 
     }
     gettimeofday(&tv_end, 0);
     free(ip);
+    free(domain);
     double pckt_rcv = pckt_n - err_n;
     rtt_tot = ((double)(tv_end.tv_sec - tv_start.tv_sec)) *1000 + ((double)(tv_end.tv_usec - tv_start.tv_usec)) / 1000;
     rtt_avg = rtt_sum / (pckt_n - err_n);
     rtt_mdev = dSqrt((rtt_sqsum / pckt_rcv) - ((rtt_sum/pckt_rcv) *(rtt_sum/pckt_rcv)) );
     int precision = calcPrecision(((pckt_n - (pckt_n - err_n))/pckt_n) * 100);
-    printf("--- {} ping statistics ---\n");//placeholder change by arg host
+    printf("^C\n--- %s ping statistics ---\n", host);//placeholder change by arg host
     printf("%.0f packets transmitted, %.0f received, %.*f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, precision, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
     printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", rtt_min, rtt_avg, rtt_max, rtt_mdev);
 }
@@ -153,6 +115,7 @@ int main(int argc, char **argv)
     struct sockaddr_in addr;
     char *host;
     char *ip;
+    char *domain;
 
     ft_bzero(&addr, sizeof(addr));
     if (argc == 1)
@@ -168,7 +131,9 @@ int main(int argc, char **argv)
         if (!addr.sin_addr.s_addr) //should never happen but let's be safe
             return 1;
         if (!(ip = dns(host, &addr)))
-            return 1;
-        ft_ping(addr, host, ip); //Use last arg
+            exit(1);
+        if (!(domain = reverse_dns_lookup(ip)))
+            exit(1);
+        ft_ping(addr, host, ip, domain); //Use last arg
     }
 }
