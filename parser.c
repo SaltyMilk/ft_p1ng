@@ -64,6 +64,54 @@ int is_ip(char *s)
     return 1;
 }
 
+int parse_numflags(char **argv, size_t i, size_t j, char flag)
+{
+	if (!argv[i][j] && !argv[i + 1])
+	{
+		print_erromissarg(flag);
+		print_help();
+		exit(2);
+	}
+	if (argv[i][j])//form -s64
+	{
+		for (int x = j; argv[i][x]; x++)
+		{
+			if (!ft_isdigit(argv[i][x]) && argv[i][x] != '+' && argv[i][x] != '-')
+				print_errominvarg(argv[i] +j);
+		}
+		long long l = ft_atois(argv[i] + j);
+		long long max = INT_MAX;
+		if (l == max + 69 || l < 0)
+		{
+			if (flag == 's')
+				print_errominvargrangeS(argv[i] + j);
+			else if (flag == 'W')
+				print_errominvargrangeW(argv[i] + j);
+		}
+		return l;
+	}
+	else//form -s 64
+	{
+		i++;
+		for (int x = 0; argv[i][x]; x++)
+		{
+			if (!ft_isdigit(argv[i][x]) && argv[i][x] != '+' && argv[i][x] != '-')
+				print_errominvarg(argv[i]);
+		}
+		long long l = ft_atois(argv[i]);
+		long long max = INT_MAX;
+		if (l == max + 69 || l < 0)
+		{
+			if (flag == 's')
+				print_errominvargrangeS(argv[i]);
+			else if (flag == 'W')
+				print_errominvargrangeW(argv[i]);
+		}
+		return l;
+	}
+
+}
+
 int check_flags(char **argv, t_flags *flags)
 {
     size_t i = 0;
@@ -83,6 +131,22 @@ int check_flags(char **argv, t_flags *flags)
                     print_help();
                     return (1);
                 }
+				else if (argv[i][j] == 's' || argv[i][j] == 'W')
+				{
+
+					int ret = parse_numflags(argv, i , j + 1, argv[i][j]);
+					if (argv[i][j] == 's')
+					{
+						flags->sflag = 1;
+						flags->sflag_value = ret;
+					}
+					else if (argv[i][j])
+					{
+						flags->Wflag = 1;
+						flags->Wflag_value = ret;
+					}
+					break; // we're done with this option
+				}
                 else 
                 {
                     print_errop(argv[i][j]);
@@ -93,7 +157,7 @@ int check_flags(char **argv, t_flags *flags)
         }
         else
             one_valid = 1;
-        argv++;
+        i++;
     }
     if (!one_valid)
     {
@@ -102,3 +166,5 @@ int check_flags(char **argv, t_flags *flags)
     }
     return (0);
 }
+
+
