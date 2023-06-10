@@ -18,7 +18,7 @@ void setsignal()
 }
 
 
-void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isip)
+void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isip, t_flags flags)
 {
     (void) addr;
     t_ping_pckt pckt;
@@ -87,6 +87,8 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
                     rtt_max = rtt;
                 if (rtt < rtt_min)
                     rtt_min = rtt;
+				if (flags.aflag)
+					printf("\a");
                 if (isip)
                     printf("%ld bytes from %s: icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), ip ,pckt_n, ttl, rtt);
                 else
@@ -142,6 +144,6 @@ int main(int argc, char **argv)
             if (!(domain = reverse_dns_lookup(ip)))
                 exit(1);
         }
-        ft_ping(addr, host, ip, domain, isip); //Use last arg
+        ft_ping(addr, host, ip, domain, isip, flags); //Use last arg
     }
 }

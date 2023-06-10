@@ -19,6 +19,7 @@ typedef struct		s_flags
     char    		vflag;
     char 			sflag;
 	char			Wflag;
+	char			aflag;
     int				sflag_value;
     int				Wflag_value;
 }               	t_flags;
