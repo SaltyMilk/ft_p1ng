@@ -81,12 +81,14 @@ int parse_numflags(char **argv, size_t i, size_t j, char flag)
 		}
 		long long l = ft_atois(argv[i] + j);
 		long long max = INT_MAX;
-		if (l == max + 69 || l < 0)
+		if (l == max + 69 || l < 0 || (l > 255 && flag == 't'))
 		{
 			if (flag == 's')
 				print_errominvargrangeS(argv[i] + j);
 			else if (flag == 'W')
 				print_errominvargrangeW(argv[i] + j);
+			else if (flag == 't')
+				print_errominvargrangeT(argv[i] + j);
 		}
 		return l;
 	}
@@ -100,12 +102,14 @@ int parse_numflags(char **argv, size_t i, size_t j, char flag)
 		}
 		long long l = ft_atois(argv[i]);
 		long long max = INT_MAX;
-		if (l == max + 69 || l < 0)
+		if (l == max + 69 || l < 0 || (l > 255 && flag == 't'))
 		{
 			if (flag == 's')
 				print_errominvargrangeS(argv[i]);
 			else if (flag == 'W')
 				print_errominvargrangeW(argv[i]);
+			else if (flag == 't')
+				print_errominvargrangeT(argv[i]);
 		}
 		return l;
 	}
@@ -133,7 +137,7 @@ int check_flags(char **argv, t_flags *flags)
                     print_help();
                     return (1);
                 }
-				else if (argv[i][j] == 's' || argv[i][j] == 'W')
+				else if (argv[i][j] == 's' || argv[i][j] == 'W' || argv[i][j] == 't')
 				{
 
 					int ret = parse_numflags(argv, i , j + 1, argv[i][j]);
@@ -142,10 +146,15 @@ int check_flags(char **argv, t_flags *flags)
 						flags->sflag = 1;
 						flags->sflag_value = ret;
 					}
-					else if (argv[i][j])
+					else if (argv[i][j] == 'W')
 					{
 						flags->Wflag = 1;
 						flags->Wflag_value = ret;
+					}
+					else if (argv[i][j] == 't')
+					{
+						flags->tflag = 1;
+						flags->tflag_value = ret;
 					}
 					break; // we're done with this option
 				}

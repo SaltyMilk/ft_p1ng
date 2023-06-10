@@ -35,6 +35,13 @@ void print_errominvargrangeS(char *s)
 	exit(1);
 }
 
+void print_errominvargrangeT(char *s)
+{
+    ft_putstr_fd("ping: invalid argument: '", 2, 0);
+    ft_putstr_fd(s, 2,0);
+    ft_putstr_fd("': out of range: 0 <= value <= 255\n", 2, 0);
+	exit(1);
+}
 void print_errominvargrangeW(char *s)
 {
     ft_putstr_fd("ping: bad linger time: '", 2, 0);

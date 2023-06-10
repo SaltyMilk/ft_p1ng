@@ -26,8 +26,8 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     size_t i = 0;
     double pckt_n = 0;
     double err_n = 0;
-    int ttl = 117;//update with -t flag
-    int to = 5;// timeout update with -W flag
+    int ttl = flags.tflag ? flags.tflag_value : 117;//update with -t flag
+    int to = flags.Wflag ? flags.Wflag_value: 5 ;// timeout update with -W flag
     int socket = setsocket(ttl, to);
     struct timeval tv_start;
     struct timeval tv_end;
@@ -41,7 +41,7 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     double rtt_max = 0;
     double rtt_avg = 0;
     double rtt_mdev = 0;
-    int pckt_size = 56;//change 56 by -s in the future
+    int pckt_size = flags.sflag ? flags.sflag_value : 56;//change 56 by -s in the future
 
     setsignal();
     gettimeofday(&tv_start, 0);
@@ -144,6 +144,7 @@ int main(int argc, char **argv)
             if (!(domain = reverse_dns_lookup(ip)))
                 exit(1);
         }
+	//	printf("s=%d, W= %d\n", flags.sflag_value, flags.Wflag_value);
         ft_ping(addr, host, ip, domain, isip, flags); //Use last arg
     }
 }

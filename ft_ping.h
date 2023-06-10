@@ -20,6 +20,8 @@ typedef struct		s_flags
     char 			sflag;
 	char			Wflag;
 	char			aflag;
+	char			tflag;
+	int				tflag_value;
     int				sflag_value;
     int				Wflag_value;
 }               	t_flags;
@@ -42,6 +44,7 @@ void				print_erromissarg(char c);
 void				print_errominvarg(char *s);
 void				print_errominvargrangeS(char *s);
 void				print_errominvargrangeW(char *s);
+void				print_errominvargrangeT(char *s);
 
 //icmp.c
 unsigned short  	checksum(void *b, int len);
