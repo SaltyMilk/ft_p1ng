@@ -21,6 +21,7 @@ typedef struct		s_flags
 	char			Wflag;
 	char			aflag;
 	char			tflag;
+	char			qflag;
 	int				tflag_value;
     int				sflag_value;
     int				Wflag_value;

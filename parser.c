@@ -131,6 +131,8 @@ int check_flags(char **argv, t_flags *flags)
                     flags->vflag = 1;
 				else if (argv[i][j] == 'a')
 					flags->aflag = 1;
+				else if (argv[i][j] == 'q')
+					flags->qflag = 1;
                 else if (argv[i][j] == 'h')
                 {
                 
