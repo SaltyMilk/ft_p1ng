@@ -2,7 +2,7 @@
 
 void print_help()
 {
-    ft_putstr_fd("\nUsage\n  ping [options] <destination>\n\nOptions:\n  <destination>\t\tdns name or ip address\n  -h\t\t\tprint help and exit\n  -v\t\t\tverbose output\n  -q\t\t\tquiet output\n  -s <size>\t\tuse <size> as number of data bytes to be sent\n  -W <timeout>\t\ttime to wait for response\n  -t <ttl>\t\tdefine time to live\n  -a\t\t\tuse audible ping\n  -c <count>\t\tstop after <count> replies\n\nFor more details see ping(8).\n", 2, 0);
+    ft_putstr_fd("\nUsage\n  ping [options] <destination>\n\nOptions:\n  <destination>\t\tdns name or ip address\n  -h\t\t\tprint help and exit\n  -v\t\t\tverbose output\n  -q\t\t\tquiet output\n  -s <size>\t\tuse <size> as number of data bytes to be sent\n  -W <timeout>\t\ttime to wait for response\n  -t <ttl>\t\tdefine time to live\n  -a\t\t\tuse audible ping\n  -c <count>\t\tstop after <count> replies\n  -D\t\t\tprint timestamps\n\nFor more details see ping(8).\n", 2, 0);
 
 }
 

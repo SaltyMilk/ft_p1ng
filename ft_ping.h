@@ -23,6 +23,7 @@ typedef struct		s_flags
 	char			tflag;
 	char			qflag;
 	char			cflag;
+	char			Dflag;
 	long long		cflag_value;
 	int				tflag_value;
     int				sflag_value;

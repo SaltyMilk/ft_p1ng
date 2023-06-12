@@ -23,7 +23,7 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     (void) addr;
     t_ping_pckt pckt;
     struct sockaddr_in r_addr;
-    size_t i = 0;
+    int i = 0;
     double pckt_n = 0;
     double err_n = 0;
     int ttl = flags.tflag ? flags.tflag_value : 117;//update with -t flag
@@ -47,16 +47,16 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     setsignal();
     gettimeofday(&tv_start, 0);
     printf("PING %s (%s) %d(%ld) bytes of data\n", host, ip, pckt_size, pckt_size + sizeof(pckt.hdr) + sizeof(struct ip));
-    while (stop_send != 42069 && (flags.cflag && c < flags.cflag_value ))
+    while (stop_send != 42069 && ((flags.cflag ? c :flags.cflag_value - 1) < flags.cflag_value ))
     {
         usleep(1000000);
         ft_bzero(&pckt, sizeof(pckt));
-        if (!(pckt.content = malloc(pckt_size - sizeof(pckt.hdr)))) 
+        if (!(pckt.content = malloc(pckt_size))) 
             exit(1);
         pckt.hdr.type = ICMP_ECHO;
         pckt.hdr.un.echo.id = getpid();
         i = 0;
-        while (i < sizeof(pckt.content))
+        while (i < pckt_size - 1)
         {
             pckt.content[i] = '0' + i;
             i++;
@@ -92,8 +92,14 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
 					printf("\a");
              	if (!flags.qflag)
 				{
-				   if (isip)
-               	     printf("%ld bytes from %s: icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), ip ,pckt_n, ttl, rtt);
+					if (flags.Dflag)
+					{
+						struct timeval tv;
+						gettimeofday(&tv, NULL);
+						printf("[%lu.%06lu] ",(unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
+					}
+					if (isip)
+               	    	printf("%ld bytes from %s: icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), ip ,pckt_n, ttl, rtt);
                		else
                		    printf("%ld bytes from %s (%s): icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), domain,ip ,pckt_n, ttl, rtt);
 				}

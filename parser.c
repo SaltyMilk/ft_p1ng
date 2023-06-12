@@ -92,15 +92,15 @@ int parse_numflags(char **argv, size_t i, size_t j, char flag)
 		}
 		long long l = ft_atois(argv[i] + j);
 		long long max = INT_MAX;
-		if (l == max + 69 || l < 0 || (l > 255 && flag == 't'))
-		{
-			if (flag == 's')
-				print_errominvargrangeS(argv[i] + j);
-			else if (flag == 'W')
-				print_errominvargrangeW(argv[i] + j);
-			else if (flag == 't')
+		if ((l <= 0 || l > 9223372036854775807) && flag == 'c')
+			print_errominvargrangeC(argv[i]);
+		else if (flag == 's' && ( l < 0 || l > max))
+			print_errominvargrangeS(argv[i] + j);
+		else if (flag == 'W' && (l < 0 || l > max/1000000))
+			print_errominvargrangeW(argv[i] + j);
+		else if (flag == 't' && (l < 0 || l > 255))
 				print_errominvargrangeT(argv[i] + j);
-		}
+		
 		return l;
 	}
 	else//form -s 64
@@ -115,15 +115,12 @@ int parse_numflags(char **argv, size_t i, size_t j, char flag)
 		long long max = INT_MAX;
 		if ((l <= 0 || l > 9223372036854775807) && flag == 'c')
 			print_errominvargrangeC(argv[i]);
-		else if (l > max || l < 0 || (l > 255 && flag == 't'))
-		{
-			if (flag == 's')
-				print_errominvargrangeS(argv[i]);
-			else if (flag == 'W')
-				print_errominvargrangeW(argv[i]);
-			else if (flag == 't')
-				print_errominvargrangeT(argv[i]);
-		}
+		else if (flag == 's' && ( l < 0 || l > max))
+			print_errominvargrangeS(argv[i] + j);
+		else if (flag == 'W' && (l < 0 || l > max/1000000))
+			print_errominvargrangeW(argv[i] + j);
+		else if (flag == 't' && (l < 0 || l > 255))
+				print_errominvargrangeT(argv[i] + j);
 		return l;
 	}
 
@@ -146,6 +143,8 @@ int check_flags(char **argv, t_flags *flags)
 					flags->aflag = 1;
 				else if (argv[i][j] == 'q')
 					flags->qflag = 1;
+				else if (argv[i][j] == 'D')
+					flags->Dflag = 1;
                 else if (argv[i][j] == 'h')
                 {
                 
