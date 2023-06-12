@@ -27,11 +27,20 @@ void print_errominvarg(char *s)
     ft_putstr_fd("'\n", 2, 0);
 	exit(1);
 }
+
 void print_errominvargrangeS(char *s)
 {
     ft_putstr_fd("ping: invalid argument: '", 2, 0);
     ft_putstr_fd(s, 2,0);
     ft_putstr_fd("': out of range: 0 <= value <= 2147483647\n", 2, 0);
+	exit(1);
+}
+
+void print_errominvargrangeC(char *s)
+{
+    ft_putstr_fd("ping: invalid argument: '", 2, 0);
+    ft_putstr_fd(s, 2,0);
+    ft_putstr_fd("': out of range: 1 <= value <= 9223372036854775807\n", 2, 0);
 	exit(1);
 }
 

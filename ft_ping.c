@@ -41,12 +41,13 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     double rtt_max = 0;
     double rtt_avg = 0;
     double rtt_mdev = 0;
+	long long c = 0;
     int pckt_size = flags.sflag ? flags.sflag_value : 56;//change 56 by -s in the future
 
     setsignal();
     gettimeofday(&tv_start, 0);
     printf("PING %s (%s) %d(%ld) bytes of data\n", host, ip, pckt_size, pckt_size + sizeof(pckt.hdr) + sizeof(struct ip));
-    while (stop_send != 42069)
+    while (stop_send != 42069 && (flags.cflag && c < flags.cflag_value ))
     {
         usleep(1000000);
         ft_bzero(&pckt, sizeof(pckt));
@@ -98,7 +99,7 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
 				}
 			}
         }
-
+		c++;
     }
     gettimeofday(&tv_end, 0);
     free(ip);
@@ -108,7 +109,9 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     rtt_avg = rtt_sum / (pckt_n - err_n);
     rtt_mdev = dSqrt((rtt_sqsum / pckt_rcv) - ((rtt_sum/pckt_rcv) *(rtt_sum/pckt_rcv)) );
     int precision = calcPrecision(((pckt_n - (pckt_n - err_n))/pckt_n) * 100);
-    printf("^C\n--- %s ping statistics ---\n", host);//placeholder change by arg host
+	if (!flags.cflag)
+		printf("^C");
+    printf("\n--- %s ping statistics ---\n", host);//placeholder change by arg host
     printf("%.0f packets transmitted, %.0f received, %.*f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, precision, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
     printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", rtt_min, rtt_avg, rtt_max, rtt_mdev);
 }
@@ -147,7 +150,6 @@ int main(int argc, char **argv)
             if (!(domain = reverse_dns_lookup(ip)))
                 exit(1);
         }
-	//	printf("s=%d, W= %d\n", flags.sflag_value, flags.Wflag_value);
         ft_ping(addr, host, ip, domain, isip, flags); //Use last arg
     }
 }

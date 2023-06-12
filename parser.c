@@ -1,5 +1,11 @@
 #include "ft_ping.h"
 
+
+int is_numflag(char c)
+{
+	return (c == 's' || c == 'W' || c == 't' || c == 'c');
+}
+
 char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
 {
     struct addrinfo hints;
@@ -26,7 +32,7 @@ char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
     i = argc - 1;
     while (i != 0)
     {
-        if (argv[i][0] == '-') //it's an option
+        if (argv[i][0] == '-')//it's an option
         {
             i--;
             continue;
@@ -41,7 +47,12 @@ char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
 
         i--;
     }
-    if (!getaddrinfo(argv[i], 0, &hints, &res))
+	if (argv[i][0] == '-')//it's an option
+	{
+        freeaddrinfo(res);
+		return NULL;
+	}
+	if (!getaddrinfo(argv[i], 0, &hints, &res))
     {
         addr->sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
         freeaddrinfo(res);
@@ -102,7 +113,9 @@ int parse_numflags(char **argv, size_t i, size_t j, char flag)
 		}
 		long long l = ft_atois(argv[i]);
 		long long max = INT_MAX;
-		if (l == max + 69 || l < 0 || (l > 255 && flag == 't'))
+		if ((l <= 0 || l > 9223372036854775807) && flag == 'c')
+			print_errominvargrangeC(argv[i]);
+		else if (l > max || l < 0 || (l > 255 && flag == 't'))
 		{
 			if (flag == 's')
 				print_errominvargrangeS(argv[i]);
@@ -139,10 +152,10 @@ int check_flags(char **argv, t_flags *flags)
                     print_help();
                     return (1);
                 }
-				else if (argv[i][j] == 's' || argv[i][j] == 'W' || argv[i][j] == 't')
+				else if (argv[i][j] == 's' || argv[i][j] == 'W' || argv[i][j] == 't' || argv[i][j] == 'c')
 				{
 
-					int ret = parse_numflags(argv, i , j + 1, argv[i][j]);
+					long long ret = parse_numflags(argv, i , j + 1, argv[i][j]);
 					if (argv[i][j] == 's')
 					{
 						flags->sflag = 1;
@@ -158,6 +171,11 @@ int check_flags(char **argv, t_flags *flags)
 						flags->tflag = 1;
 						flags->tflag_value = ret;
 					}
+					else if (argv[i][j] == 'c')
+					{
+						flags->cflag = 1;
+						flags->cflag_value = ret;
+					}
 					break; // we're done with this option
 				}
                 else 
@@ -168,9 +186,9 @@ int check_flags(char **argv, t_flags *flags)
                 }
             }
         }
-        else
+        else if (!(i > 0 && argv[i - 1][0] == '-' && is_numflag(argv[i - 1][ft_strlen(argv[i - 1])-1])))// Basically if the previous argv is a numerical flag))
             one_valid = 1;
-        i++;
+		i++;
     }
     if (!one_valid)
     {

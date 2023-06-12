@@ -58,7 +58,6 @@ long long						ft_atois(const char *str)
 	unsigned long long	tenpowdig;
 	unsigned long long	res;
 	int					digits_sstr;
-	unsigned long long max = INT_MAX;
 
 
 	res = 0;
@@ -70,14 +69,7 @@ long long						ft_atois(const char *str)
 		res += (str[i] - 48) * tenpowdig;
 		tenpowdig /= 10;
 		i++;
-	if (res > max)
-		return (max + 69);
-	if (sign == -1 && res > max + 1 )
-		return (max + 69);
 	}
-	if (res > max)
-		return (max + 69);
-	if (sign == -1 && res > max + 1)
-		return (max + 69);
+
 	return ((int)res * sign);
 }
