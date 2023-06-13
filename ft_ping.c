@@ -21,7 +21,7 @@ void setsignal()
 void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isip, t_flags flags)
 {
     (void) addr;
-    t_ping_pckt pckt;
+//    t_ping_pckt pckt;
     struct sockaddr_in r_addr;
     int i = 0;
     double pckt_n = 0;
@@ -43,40 +43,42 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     double rtt_mdev = 0;
 	long long c = 0;
     int pckt_size = flags.sflag ? flags.sflag_value : 56;//change 56 by -s in the future
+	unsigned long long icmp_err = 0;
 
+	char *pckt;
     setsignal();
     gettimeofday(&tv_start, 0);
-    printf("PING %s (%s) %d(%ld) bytes of data\n", host, ip, pckt_size, pckt_size + sizeof(pckt.hdr) + sizeof(struct ip));
+    printf("PING %s (%s) %d(%ld) bytes of data\n", host, ip, pckt_size, pckt_size + sizeof(struct icmphdr) + sizeof(struct ip));
     while (stop_send != 42069 && ((flags.cflag ? c :flags.cflag_value - 1) < flags.cflag_value ))
     {
         usleep(1000000);
-        ft_bzero(&pckt, sizeof(pckt));
-        if (!(pckt.content = malloc(pckt_size))) 
+        if (!(pckt = ft_calloc(sizeof(struct ip) + sizeof(struct icmphdr)+ pckt_size, 1))) 
             exit(1);
-        pckt.hdr.type = ICMP_ECHO;
-        pckt.hdr.un.echo.id = getpid();
+        ((struct icmphdr *)pckt)->type = ICMP_ECHO;
+        ((struct icmphdr *)pckt)->un.echo.id = getpid();
         i = 0;
         while (i < pckt_size - 1)
         {
-            pckt.content[i] = '0' + i;
+            *(pckt + sizeof(struct icmphdr)+ i) = '0' + i;
             i++;
         }
-        pckt.content[i] = 0;
-        pckt.hdr.un.echo.sequence = pckt_n++;
-        pckt.hdr.checksum = checksum(&pckt, sizeof(pckt));
+        *(pckt + sizeof(struct icmphdr) + i) = 0;
+        ((struct icmphdr *)pckt)->un.echo.sequence = pckt_n++;
+        ((struct icmphdr *)pckt)->checksum = checksum(pckt, sizeof(struct icmphdr) + pckt_size);
 
         gettimeofday(&tv_sent, 0);
-        if (sendto(socket, &pckt, sizeof(pckt), 0, (struct sockaddr*)&addr, sizeof(addr)) <= 0)
+        if (sendto(socket, pckt, sizeof(struct icmphdr)+ pckt_size, 0, (struct sockaddr*)&addr, sizeof(addr)) <= 0)
         {
             err_n++;
-            free(pckt.content);
+            free(pckt);
         }
         else
         {
-            free(pckt.content);
+            
 
             socklen_t len = sizeof(r_addr);
-            if (recvfrom(socket, &pckt, sizeof(pckt), 0, (struct sockaddr*)&r_addr, &len) <= 0)
+
+            if (recvfrom(socket, pckt, sizeof(struct ip) + sizeof(struct icmphdr) + pckt_size, 0, (struct sockaddr*)&r_addr, &len) <= 0)
                 err_n++;
             else
             {
@@ -90,11 +92,21 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
                     rtt_min = rtt;
 				if (flags.aflag)
 					printf("\a");
-				if(flags.vflag && !(pckt.hdr.type ==69 && pckt.hdr.code==0))
+				if(flags.vflag && ((struct icmphdr *)pckt)->type != ICMP_ECHOREPLY)
 				{
-                    printf("Error..Packet received with ICMP type %d code %d\n",pckt.hdr.type, pckt.hdr.code);
-					if (pckt.hdr.code == 48 || pckt.hdr.code == 192)
-						printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",domain,ip, pckt_n);
+					int type = ((struct icmphdr *)(pckt + sizeof(struct ip)))->type;
+					int code = ((struct icmphdr *)(pckt + sizeof(struct ip)))->code;
+					if (type == 11 && code == 0)
+					{
+						struct in_addr ttladdr;
+						ttladdr.s_addr = ((struct ip*)pckt)->ip_src.s_addr;
+						char *from_ip = inet_ntoa(ttladdr);//for ttl bonus -t
+						char *from = reverse_dns_lookup(from_ip);
+						printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",from,from_ip, pckt_n);
+						icmp_err++;
+						err_n++;
+						free(from);
+					}
 				}
              	else if (!flags.qflag)
 				{
@@ -105,11 +117,12 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
 						printf("[%lu.%06lu] ",(unsigned long)tv.tv_sec, (unsigned long)tv.tv_usec);
 					}
 					if (isip)
-               	    	printf("%ld bytes from %s: icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), ip ,pckt_n, ttl, rtt);
+               	    	printf("%ld bytes from %s: icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(struct icmphdr), ip ,pckt_n, ttl, rtt);
                		else
-               		    printf("%ld bytes from %s (%s): icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(pckt.hdr), domain,ip ,pckt_n, ttl, rtt);
+               		    printf("%ld bytes from %s (%s): icmp_seq=%.0f ttl=%d time=%.3f ms\n", pckt_size + sizeof(struct icmphdr), domain,ip ,pckt_n, ttl, rtt);
 				}
 			}
+			free(pckt);
         }
 		c++;
     }
@@ -123,9 +136,14 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
     int precision = calcPrecision(((pckt_n - (pckt_n - err_n))/pckt_n) * 100);
 	if (!flags.cflag)
 		printf("^C");
-    printf("\n--- %s ping statistics ---\n", host);//placeholder change by arg host
-    printf("%.0f packets transmitted, %.0f received, %.*f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, precision, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
-    printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", rtt_min, rtt_avg, rtt_max, rtt_mdev);
+    printf("\n--- %s ping statistics ---\n", host);
+	if (!icmp_err)
+    	printf("%.0f packets transmitted, %.0f received, %.*f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n, precision, ((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
+	else
+		printf("%.0f packets transmitted, %.0f received, +%lld errors, %.*f%% packet loss, time %.0fms\n", pckt_n, pckt_n - err_n,  icmp_err, precision,((pckt_n - (pckt_n - err_n))/pckt_n) * 100, rtt_tot);
+	if (pckt_n - err_n > 0)
+		printf("rtt min/avg/max/mdev = %.3f/%.3f/%.3f/%.3f ms\n", rtt_min, rtt_avg, rtt_max, rtt_mdev);
+	puts("");
 }
 
 
