@@ -90,7 +90,13 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
                     rtt_min = rtt;
 				if (flags.aflag)
 					printf("\a");
-             	if (!flags.qflag)
+				if(flags.vflag && !(pckt.hdr.type ==69 && pckt.hdr.code==0))
+				{
+                    printf("Error..Packet received with ICMP type %d code %d\n",pckt.hdr.type, pckt.hdr.code);
+					if (pckt.hdr.code == 48 || pckt.hdr.code == 192)
+						printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",domain,ip, pckt_n);
+				}
+             	else if (!flags.qflag)
 				{
 					if (flags.Dflag)
 					{
