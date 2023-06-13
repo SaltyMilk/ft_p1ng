@@ -92,7 +92,7 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
                     rtt_min = rtt;
 				if (flags.aflag)
 					printf("\a");
-				if(flags.vflag && ((struct icmphdr *)pckt)->type != ICMP_ECHOREPLY)
+				if(((struct icmphdr *)pckt)->type != ICMP_ECHOREPLY)
 				{
 					int type = ((struct icmphdr *)(pckt + sizeof(struct ip)))->type;
 					int code = ((struct icmphdr *)(pckt + sizeof(struct ip)))->code;
@@ -102,7 +102,8 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
 						ttladdr.s_addr = ((struct ip*)pckt)->ip_src.s_addr;
 						char *from_ip = inet_ntoa(ttladdr);//for ttl bonus -t
 						char *from = reverse_dns_lookup(from_ip);
-						printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",from,from_ip, pckt_n);
+						if (flags.vflag)
+							printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",from,from_ip, pckt_n);
 						icmp_err++;
 						err_n++;
 						free(from);
@@ -160,6 +161,7 @@ int main(int argc, char **argv)
     int isip;
 
     ft_bzero(&addr, sizeof(addr));
+	ft_bzero(&flags, sizeof(t_flags));
     if (argc == 1)
     {
         ft_putstr_fd("ping: usage error: Destination address required\n", 2, 0);
