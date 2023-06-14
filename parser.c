@@ -14,21 +14,32 @@ char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
     ft_bzero(&hints, sizeof(hints));
     hints.ai_family = AF_INET; //IpV4
 
-    size_t i = 0;
-    while (i < argc)
+    size_t i = argc - 1;
+    while (i != 0)
     {
         if (argv[i][0] == '-') //it's an option
         {
-            i++;
+            i--;
             continue;
         }
         if (getaddrinfo(argv[i], 0, &hints, &res))
         {
+			print_errhost(argv[i]);
             exit(2);
         }
         freeaddrinfo(res);
-        i++;
+        i--;
     }
+	char b = 0;
+	if (argv[i][0] == '-') //it's an option
+		b = 1;
+    else if (getaddrinfo(argv[i], 0, &hints, &res))
+    {
+		print_errhost(argv[i]);
+        exit(2);
+    }
+	if (!b)
+    	freeaddrinfo(res);
     i = argc - 1;
     while (i != 0)
     {
@@ -116,11 +127,11 @@ int parse_numflags(char **argv, size_t i, size_t j, char flag)
 		if ((l <= 0 || l > 9223372036854775807) && flag == 'c')
 			print_errominvargrangeC(argv[i]);
 		else if (flag == 's' && ( l < 0 || l > max))
-			print_errominvargrangeS(argv[i] + j);
+			print_errominvargrangeS(argv[i]);
 		else if (flag == 'W' && (l < 0 || l > max/1000000))
-			print_errominvargrangeW(argv[i] + j);
+			print_errominvargrangeW(argv[i]);
 		else if (flag == 't' && (l < 0 || l > 255))
-				print_errominvargrangeT(argv[i] + j);
+				print_errominvargrangeT(argv[i]);
 		return l;
 	}
 

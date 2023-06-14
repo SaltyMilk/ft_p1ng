@@ -79,8 +79,17 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
             socklen_t len = sizeof(r_addr);
 
             if (recvfrom(socket, pckt, sizeof(struct ip) + sizeof(struct icmphdr) + pckt_size, 0, (struct sockaddr*)&r_addr, &len) <= 0)
-                err_n++;
-            else
+            {
+				if (flags.vflag)
+				{
+					if (isip)
+               		    printf("From %s: icmp_seq=%.0f Received no answer.\n", ip ,pckt_n);
+               		else
+               			printf("From %s (%s): icmp_seq=%.0f Received no answer.\n", domain,ip ,pckt_n);
+				}
+				err_n++;
+			}
+			else
             {
                 gettimeofday(&tv_rcv, 0);
                 rtt = ((double)(tv_rcv.tv_sec - tv_sent.tv_sec)) *1000 + ((double)(tv_rcv.tv_usec - tv_sent.tv_usec))/1000;
@@ -92,9 +101,10 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
                     rtt_min = rtt;
 				if (flags.aflag)
 					printf("\a");
-				if(((struct icmphdr *)pckt)->type != ICMP_ECHOREPLY)
+				int type = ((struct icmphdr *)(pckt + sizeof(struct ip)))->type;
+				if(type == 11)
 				{
-					int type = ((struct icmphdr *)(pckt + sizeof(struct ip)))->type;
+					
 					int code = ((struct icmphdr *)(pckt + sizeof(struct ip)))->code;
 					if (type == 11 && code == 0)
 					{
@@ -103,7 +113,12 @@ void ft_ping(struct sockaddr_in addr, char *host,char *ip, char *domain, int isi
 						char *from_ip = inet_ntoa(ttladdr);//for ttl bonus -t
 						char *from = reverse_dns_lookup(from_ip);
 						if (flags.vflag)
-							printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",from,from_ip, pckt_n);
+						{
+							if (!from)
+								printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",from_ip,from_ip, pckt_n);
+							else	
+								printf("From %s (%s): icmp_seq=%0.f Time to Live exceeded\n",from,from_ip, pckt_n);
+						}
 						icmp_err++;
 						err_n++;
 						free(from);

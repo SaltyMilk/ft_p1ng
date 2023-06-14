@@ -1,6 +1,6 @@
 MSRC =  math.c err.c parser.c icmp.c ft_ping.c
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror
 MOBJ = $(MSRC:.c=.o)
 
 
