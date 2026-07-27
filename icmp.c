@@ -58,6 +58,7 @@ char* reverse_dns_lookup(char *ip)
     struct sockaddr_in addr;
     char buf[NI_MAXHOST];
 
+    ft_bzero(&addr, sizeof(addr));
     ft_bzero(buf, sizeof(buf));
     
     if (inet_pton(AF_INET, ip, &addr.sin_addr) <= 0)

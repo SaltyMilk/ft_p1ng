@@ -54,22 +54,16 @@ char *parse_hosts(size_t argc, char **argv, struct sockaddr_in *addr)
             freeaddrinfo(res);
             return argv[i];
         }
-        freeaddrinfo(res);
-
         i--;
     }
 	if (argv[i][0] == '-')//it's an option
-	{
-        freeaddrinfo(res);
 		return NULL;
-	}
 	if (!getaddrinfo(argv[i], 0, &hints, &res))
     {
         addr->sin_addr.s_addr = ((struct sockaddr_in*)res->ai_addr)->sin_addr.s_addr;
         freeaddrinfo(res);
         return argv[i];
     }
-    freeaddrinfo(res);
     return NULL;
 }
 

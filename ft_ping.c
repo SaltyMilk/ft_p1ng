@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     struct sockaddr_in addr;
     char *host;
     char *ip;
-    char *domain;
+    char *domain = NULL;
     int isip;
 
     ft_bzero(&addr, sizeof(addr));
