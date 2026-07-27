@@ -150,7 +150,7 @@ int check_flags(char **argv, t_flags *flags)
 					flags->qflag = 1;
 				else if (argv[i][j] == 'D')
 					flags->Dflag = 1;
-                else if (argv[i][j] == 'h')
+                else if (argv[i][j] == 'h' || argv[i][j] == '?')
                 {
                 
                     print_help();
